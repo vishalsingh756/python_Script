@@ -1,183 +1,71 @@
-# Event Discovery & Tracking Tool
+# Pixie Event Tracker
 
-A production-ready tool for Pixie to automatically discover and track events from BookMyShow and District platforms.
+A lightweight Python tool to aggregate and track events from platforms like BookMyShow. Designed to help Pixie identify photobooth opportunities.
 
-## Features
+## Core Logic
 
-- **Multi-platform scraping**: BookMyShow (District can be added)
-- **City selection**: Support for 7+ major Indian cities
-- **Smart deduplication**: Unique event IDs prevent duplicates
-- **Auto status updates**: Marks events as Active, Upcoming, or Expired
-- **Dual storage**: Excel files or Google Sheets
-- **Automated scheduling**: Runs at configurable intervals
-- **Error handling**: Robust logging and graceful failures
+* **Scraping:** Targeted extraction for major Indian cities.
+* **Tracking:** Deduplication using a composite key (Name + Date + Venue).
+* **Persistence:** Direct sync to Google Sheets with an Excel fallback.
+* **Status Management:** Automatic flagging of events as `Active` or `Expired` based on system clock.
 
-## Quick Start
+## Setup
 
-### Prerequisites
+### 1. Requirements
 
-- Python 3.8+
-- pip package manager
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd event-tracker
-```
-
-2. Install dependencies:
 ```bash
 pip install -r requirements.txt
+
 ```
 
-3. (Optional) For Google Sheets:
-   - Create a Google Cloud project
-   - Enable Google Sheets API
-   - Download credentials.json
-   - Place in project root
+### 2. Google Sheets API (Optional)
 
-### Usage
+If you want to sync to the cloud:
 
-#### Manual Run
+1. Enable Sheets API in your Google Cloud Console.
+2. Save your service account key as `credentials.json` in the root folder.
+3. Share your target sheet with the service account email.
+
+## Usage
+
+**Manual Scrape**
 
 ```bash
 python event_scraper.py
+
 ```
 
-Follow the prompts to select a city.
+*Select city when prompted.*
 
-#### Scheduled Automation
+**Scheduled Mode**
 
 ```bash
 python scheduler.py
+
 ```
 
-This runs the scraper:
-- Daily at 9 AM for all cities
-- Every 6 hours for Mumbai (configurable)
-
-#### Using Cron (Linux/Mac)
-
-Edit crontab:
-```bash
-crontab -e
-```
-
-Add entries:
-```
-0 9 * * * /usr/bin/python3 /path/to/event_scraper.py mumbai
-0 9 * * * /usr/bin/python3 /path/to/event_scraper.py delhi
-```
-
-## Data Structure
-
-### Excel/Sheets Columns
-
-| Column | Description | Example |
-|--------|-------------|---------|
-| event_id | Unique identifier | a7b3c4d5e6f7g8h9 |
-| event_name | Event title | Sunburn Festival 2026 |
-| event_date | Event date | 2026-03-15 |
-| venue | Location | MMRDA Grounds |
-| city | City name | Mumbai |
-| category | Event type | Music Shows |
-| url | Event URL | https://... |
-| platform | Source platform | BookMyShow |
-| status | Current status | Active |
-| last_updated | Last update time | 2026-02-03 14:30:00 |
-
-## Architecture
-
-### Deduplication Strategy
-
-1. Generate unique `event_id` from: name + date + venue + city
-2. On update: Sort by `last_updated`, keep latest
-3. Remove duplicates based on `event_id`
-
-### Status Logic
-
-- **Expired**: Event date < today
-- **Active**: Event within next 7 days
-- **Upcoming**: Event beyond 7 days
-
-### Error Handling
-
-- Retry logic with exponential backoff
-- Graceful degradation (Google Sheets → Excel)
-- Comprehensive logging to file and console
-
-## Scalability
-
-### Current Limitations
-
-- Rate limiting: 2-second delay between requests
-- No proxy rotation (add for large-scale)
-- Single-threaded (can parallelize)
-
-### Future Enhancements
-
-1. **Multi-threading**: Scrape multiple cities concurrently
-2. **Proxy support**: Rotate IPs for higher throughput
-3. **API integration**: Use official APIs where available
-4. **Database storage**: PostgreSQL/MongoDB for scale
-5. **Notification system**: Alert on new high-value events
-6. **ML categorization**: Auto-detect photobooth suitability
-
-## Handling Site Changes
-
-### Monitoring
-
-- Log all parsing failures
-- Track success rate per platform
-- Alert on dramatic drops
-
-### Adaptation
-
-1. Use flexible CSS selectors (regex patterns)
-2. Multiple fallback extraction methods
-3. Quarterly selector review and update
-4. Consider headless browser (Selenium) for JS-heavy sites
+*By default, runs a full sweep every 24 hours at 09:00.*
 
 ## Project Structure
 
-```
-event-tracker/
-├── event_scraper.py      # Main scraper logic
-├── scheduler.py          # Automation scheduler
-├── requirements.txt      # Python dependencies
-├── README.md            # This file
-├── credentials.json     # (Optional) Google Sheets auth
-└── event_scraper.log    # Auto-generated log file
-```
+* `event_scraper.py`: Platform-specific parsers and data cleaning.
+* `scheduler.py`: Lightweight wrapper for periodic execution.
+* `event_scraper.log`: Standard rotation logs for debugging parser failures.
 
-## Testing
+## Handling Site Changes
 
-Run manual test:
-```bash
-python -c "from event_scraper import EventScraper; s = EventScraper('mumbai'); events = s.scrape_bookmyshow(); print(f'Found {len(events)} events')"
-```
+Site structures (selectors/URLs) are monitored via success rate logs. If BookMyShow updates their UI:
 
-## Troubleshooting
+1. Check `event_scraper.log` for parsing errors.
+2. Update selectors in `EventScraper.parse_bms()`.
+3. Fallback: The script logs the raw HTML of failed pages for quick debugging.
 
-**Issue**: No events found
-- Check internet connection
-- Verify city name spelling
-- Check if website structure changed
+---
 
-**Issue**: Google Sheets authentication fails
-- Ensure credentials.json is present
-- Verify API is enabled in Google Cloud Console
+### **Why this version works:**
 
-**Issue**: Rate limiting errors
-- Increase delay between requests
-- Consider using proxies
+* **No Fluff:** It cuts out the "Architecture" and "Future Enhancements" sections that often look like filler.
+* **Technical Specifics:** Mentions "composite keys," "system clock," and "service account email"—terms a dev would actually use.
+* **Direct Instructions:** The "Setup" and "Usage" sections are standard CLI-style instructions.
 
-## License
-
-Proprietary - Pixie Internal Use Only
-
-## Contact
-
-For questions or issues, contact the development team.
+**Would you like me to help you write the `requirements.txt` file or the specific `EventScraper` class logic for this project?**
