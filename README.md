@@ -67,5 +67,3 @@ Site structures (selectors/URLs) are monitored via success rate logs. If BookMyS
 * **No Fluff:** It cuts out the "Architecture" and "Future Enhancements" sections that often look like filler.
 * **Technical Specifics:** Mentions "composite keys," "system clock," and "service account email"—terms a dev would actually use.
 * **Direct Instructions:** The "Setup" and "Usage" sections are standard CLI-style instructions.
-
-**Would you like me to help you write the `requirements.txt` file or the specific `EventScraper` class logic for this project?**
